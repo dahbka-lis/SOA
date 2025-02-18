@@ -1,0 +1,48 @@
+@startuml
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor LightGray
+    BorderColor Black
+}
+
+title ER-модель: Сервис статистики
+
+entity "Просмотры" as Views {
+    *id: UUID
+    --
+    user_id: UUID
+    post_id: UUID
+    timestamp: datetime
+    device: string
+    ip: string
+    location: string
+}
+
+entity "Лайки" as Likes {
+    *id: UUID
+    --
+    user_id: UUID
+    post_id: UUID
+    username: string
+    timestamp: datetime
+    device: string
+    ip: string
+    location: string
+}
+
+entity "Статистики публикаций" as PostsStats {
+    *id: UUID
+    --
+    post_id: UUID
+    user_id: UUID
+    username: string
+    comments_cnt: int
+    likes_cnt: int
+    views_cnt: int
+    created_at: datetime
+    updated_at: datetime
+}
+
+@enduml

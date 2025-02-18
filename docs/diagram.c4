@@ -1,0 +1,125 @@
+specification {
+  element person {
+    style {
+      shape person
+      color green
+    }
+  }
+
+  element webapp {
+    style {
+      shape browser
+      color secondary
+    }
+  }
+
+  element container {
+    style {
+      color primary
+    }
+  }
+
+  element database {
+    style {
+      shape cylinder
+      color muted
+    }
+  }
+
+  element queue {
+    style {
+      shape queue
+      color indigo
+    }
+  }
+}
+
+model {
+  user = person 'Пользователь' {
+    description 'Взаимодействует с сайтом'
+  }
+
+  webApplication = webapp 'Web UI' {
+    description 'Предоставляет управление социальной сетью'
+  }
+
+  apiGateway = container 'API Gateway' {
+      description 'Принимает запросы с UI и перенаправляет их сервисам'
+      technology 'Golang'
+      style {
+        icon tech:go
+      }
+    }
+
+    usersService = container 'Сервис пользователей' {
+      description 'Хранит данных о пользователях, регистрирует и авторизирует'
+      technology 'Python'
+      style {
+        icon tech:python
+      }
+    }
+
+    postsService = container 'Сервис постов' {
+      description 'Хранит посты и комментарии с возможностью их создания, редактирования и удаления'
+      technology 'Golang'
+      style {
+        icon tech:go
+      }
+    }
+
+    statsService = container 'Сервис статистики' {
+      description 'Считает просмотры, лайки и комментарии'
+      technology 'Python'
+      style {
+        icon tech:python
+      }
+    }
+
+    usersDb = database 'БД пользователей' {
+      technology 'PostgreSQL'
+      style {
+        icon tech:postgresql
+      }
+    }
+
+    postsDb = database 'БД для постов и комментариев' {
+      technology 'PostgreSQL'
+      style {
+        icon tech:postgresql
+      }
+    }
+
+    statsDb = database 'БД статистики' {
+      technology 'ClickHouse'
+    }
+
+    messageBroker = queue 'Брокер статистики' {
+      technology 'Kafka'
+      style {
+        icon tech:kafka
+      }
+    }
+
+  user -> webApplication 'Взаимодействует'
+  webApplication -> apiGateway 'REST API'
+
+  apiGateway -> usersService 'Регистрация, авторизация и поиск пользователя'
+  apiGateway -> postsService 'Создание, редактирование и просмотр постов'
+  apiGateway -> statsService 'Получение статистики'
+  apiGateway -> messageBroker 'Отправка событий о действиях пользователей'
+
+  usersService -> usersDb 'Хранение данных пользователей'
+  postsService -> postsDb 'Хранение постов и комментариев'
+  statsService -> statsDb 'Хранение статистики'
+
+  postsService -> messageBroker 'Подпись на события'
+  statsService -> messageBroker 'Подпись на события'
+}
+
+views {
+  view index {
+    title 'Социальная сеть'
+
+    include *
+  }
+}

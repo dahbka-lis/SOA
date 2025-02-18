@@ -1,0 +1,50 @@
+@startuml
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor LightGray
+    BorderColor Black
+}
+
+title ER-модель: Сервис пользователей
+
+entity "Пользователи" as User {
+    *id: UUID
+    --
+    username: string
+    password_hash: string
+    phone: string
+    email: string
+    created_at: datetime
+    posts_cnt: int
+}
+
+entity "Профили" as Profile {
+    *id: UUID
+    --
+    user_id: UUID
+    bio: string
+    date_of_birth: datetime
+    avatar_url: string
+    status: string
+    updated_at: datetime
+    location: string
+}
+
+entity "Сессии" as Session {
+    *id: UUID
+    --
+    user_id: UUID
+    token: string
+    created_at: datetime
+    expires_at: datetime
+    ip: string
+    location: string
+    user_agent: string
+}
+
+User ||--|| Profile
+User ||--|| Session
+
+@enduml
