@@ -13,43 +13,34 @@ const userServiceURL = "http://user_service:8000"
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	targetURL := userServiceURL + r.URL.Path
-
-	// Читаем тело запроса
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
-
-	// Создаем новый запрос с переданным телом
-	proxyReq, err := http.NewRequest(r.Method, targetURL, bytes.NewReader(body))
-	if err != nil {
-		http.Error(w, "Error creating request", http.StatusInternalServerError)
-		return
+	if r.URL.RawQuery != "" {
+		targetURL += "?" + r.URL.RawQuery
 	}
 
-	// Копируем заголовки
-	proxyReq.Header = r.Header
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, "Error reading request body", http.StatusInternalServerError)
+        return
+    }
+    defer r.Body.Close()
 
-	// Выполняем запрос
-	resp, err := http.DefaultClient.Do(proxyReq)
-	if err != nil {
-		http.Error(w, "Error contacting user service", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
+    proxyReq, err := http.NewRequest(r.Method, targetURL, bytes.NewReader(body))
+    if err != nil {
+        http.Error(w, "Error creating request", http.StatusInternalServerError)
+        return
+    }
 
-	// Копируем заголовки ответа
-	for key, values := range resp.Header {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
-	}
+    proxyReq.Header = r.Header
 
-	// Устанавливаем код статуса и передаем тело ответа
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+    resp, err := http.DefaultClient.Do(proxyReq)
+    if err != nil {
+        http.Error(w, "Error contacting user service", http.StatusInternalServerError)
+        return
+    }
+    defer resp.Body.Close()
+
+    w.WriteHeader(resp.StatusCode)
+    io.Copy(w, resp.Body)
 }
 
 func main() {

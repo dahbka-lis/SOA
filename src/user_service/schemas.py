@@ -15,7 +15,7 @@ class UserLogin(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str
+    user_id: int
     phone: Optional[str]
     email: Optional[str]
 

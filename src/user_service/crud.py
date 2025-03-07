@@ -49,7 +49,7 @@ def create_session(db: Session, user_id: int, token: str, expires_at: datetime):
 
 def update_user(db: Session, user: schemas.UserUpdate):
     db_user = (
-        db.query(models.User).filter(models.User.username == user.username).first()
+        db.query(models.User).filter(models.User.id == user.user_id).first()
     )
     if not db_user:
         return None

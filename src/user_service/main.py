@@ -75,11 +75,11 @@ def update_profile(
     db: Session = Depends(get_db),
 ):
     session = crud.get_session_by_token(db, user.token)
-    if not session or session.expires_at < datetime.now(timezone.utc):
+    if not session or session.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Invalid or expired session")
 
     user_update = schemas.UserUpdate(
-        username=user.username, phone=user.phone, email=user.email
+        user_id=session.user_id, phone=user.phone, email=user.email
     )
 
     profile_update = schemas.ProfileUpdate(
