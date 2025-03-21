@@ -13,23 +13,22 @@ entity "Пользователи" as User {
     *id: UUID
     --
     username: string
-    password_hash: string
+    password: string
     phone: string
     email: string
-    created_at: datetime
-    posts_cnt: int
 }
 
 entity "Профили" as Profile {
     *id: UUID
     --
     user_id: UUID
+    first_name: string
+    last_name: string
     bio: string
     date_of_birth: datetime
-    avatar_url: string
-    status: string
+    avatar: string
+    created_at: datetime
     updated_at: datetime
-    location: string
 }
 
 entity "Сессии" as Session {
@@ -39,9 +38,6 @@ entity "Сессии" as Session {
     token: string
     created_at: datetime
     expires_at: datetime
-    ip: string
-    location: string
-    user_agent: string
 }
 
 User ||--|| Profile
