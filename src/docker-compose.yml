@@ -1,27 +1,43 @@
 services:
-  db:
+  user_db:
     image: postgres:13
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: users
       POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
     restart: always
 
   user_service:
     build: ./user_service
     depends_on:
-      - db
+      - user_db
     ports:
       - "8000:8000"
+    restart: always
+
+  post_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: post
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: posts
+      POSTGRES_HOST_AUTH_METHOD: trust
+    restart: always
+
+  post_service:
+    build: ./post_service
+    depends_on:
+      - post_db
+    ports:
+      - "50051:50051"
     restart: always
 
   gateway_service:
     build: ./gateway_service
     depends_on:
       - user_service
+      - post_service
     ports:
       - "8080:8080"
     restart: always
