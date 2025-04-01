@@ -1,20 +1,22 @@
 package main
 
 import (
-    "bytes"
-    "context"
-    "encoding/json"
-    "io"
-    "log"
-    "net/http"
-    "strconv"
-    "time"
+	"bytes"
+	"context"
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
 
-    "github.com/gorilla/mux"
-    "github.com/rs/cors"
-    "google.golang.org/grpc"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
-    postpb "github.com/network/src/gateway_service/post/proto"
+	postpb "github.com/network/src/gateway_service/post/proto"
 )
 
 const (
@@ -22,22 +24,41 @@ const (
     grpcPostAddr   = "post_service:50051"
 )
 
-func proxyHandler(w http.ResponseWriter, r *http.Request) {
-    targetURL := userServiceURL + r.URL.Path
-    if r.URL.RawQuery != "" {
-        targetURL += "?" + r.URL.RawQuery
+func grpcCodeToHTTP(code codes.Code) int {
+    switch code {
+    case codes.OK:
+        return http.StatusOK
+    case codes.NotFound:
+        return http.StatusNotFound
+    case codes.PermissionDenied:
+        return http.StatusForbidden
+    case codes.Unauthenticated:
+        return http.StatusUnauthorized
+    case codes.InvalidArgument:
+        return http.StatusBadRequest
+    default:
+        return http.StatusInternalServerError
     }
+}
+
+func proxyHandler(w http.ResponseWriter, r *http.Request) {
+	targetURL := userServiceURL + r.URL.Path
+	if r.URL.RawQuery != "" {
+		targetURL += "?" + r.URL.RawQuery
+	}
 
     body, err := io.ReadAll(r.Body)
     if err != nil {
-        http.Error(w, "Error reading request body", http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, err.Error(), grpcCodeToHTTP(st.Code()))
         return
     }
     defer r.Body.Close()
 
     proxyReq, err := http.NewRequest(r.Method, targetURL, bytes.NewReader(body))
     if err != nil {
-        http.Error(w, "Error creating request", http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, err.Error(), grpcCodeToHTTP(st.Code()))
         return
     }
 
@@ -45,7 +66,8 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 
     resp, err := http.DefaultClient.Do(proxyReq)
     if err != nil {
-        http.Error(w, "Error contacting user service", http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, err.Error(), grpcCodeToHTTP(st.Code()))
         return
     }
     defer resp.Body.Close()
@@ -83,7 +105,8 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 
     grpcResp, err := postClient.CreatePost(ctx, grpcReq)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, st.Message(), grpcCodeToHTTP(st.Code()))
         return
     }
 
@@ -105,7 +128,8 @@ func getPostHandler(w http.ResponseWriter, r *http.Request) {
 
     grpcResp, err := postClient.GetPost(ctx, grpcReq)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, st.Message(), grpcCodeToHTTP(st.Code()))
         return
     }
 
@@ -143,7 +167,8 @@ func updatePostHandler(w http.ResponseWriter, r *http.Request) {
 
     grpcResp, err := postClient.UpdatePost(ctx, grpcReq)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, st.Message(), grpcCodeToHTTP(st.Code()))
         return
     }
 
@@ -165,7 +190,8 @@ func deletePostHandler(w http.ResponseWriter, r *http.Request) {
 
     _, err := postClient.DeletePost(ctx, grpcReq)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, st.Message(), grpcCodeToHTTP(st.Code()))
         return
     }
 
@@ -199,7 +225,8 @@ func listPostsHandler(w http.ResponseWriter, r *http.Request) {
 
     grpcResp, err := postClient.ListPosts(ctx, grpcReq)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        st, _ := status.FromError(err);
+        http.Error(w, st.Message(), grpcCodeToHTTP(st.Code()))
         return
     }
 

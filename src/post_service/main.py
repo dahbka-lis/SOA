@@ -17,7 +17,6 @@ class PostServiceServicer(post_pb2_grpc.PostServiceServicer):
         self.db_session = database.SessionLocal()
 
     def CreatePost(self, request, context):
-        print("create post!!!")
         post_create = schemas.PostCreate(
             title=request.title,
             description=request.description,

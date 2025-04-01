@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Social Network
-  version: 1.0.0
-  description: API для регистрации, аутентификации и управления профилем пользователя (пока)
+  version: 1.1.0
+  description: API для взаимодействия с социальной сетью. Сервис пользователей предоставляет регистрацию, авторизацию, просмотр и изменения профиля. Сервис постов предоставляет создание, обновление, удаление и просмотр постов.
 servers:
   - url: http://localhost:8080
 paths:
@@ -77,6 +77,138 @@ paths:
           description: OK
         "401":
           description: Invalid or expired session
+  /posts:
+    post:
+      summary: Создать новый пост
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'http://localhost:8000/docs#/components/schemas/PostCreate'
+      responses:
+        '201':
+          description: Пост успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: 'http://localhost:8000/docs#/components/schemas/PostOut'
+        '400':
+          description: Неверный запрос
+
+    get:
+      summary: Получить список постов
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+          description: Номер страницы
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            minimum: 1
+          description: Количество постов на странице
+        - in: query
+          name: requester_id
+          schema:
+            type: integer
+            minimum: 1
+          description: Идентификатор пользователя
+      responses:
+        '200':
+          description: Список постов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'http://localhost:8000/docs#/components/schemas/PostOut'
+  /posts/{id}:
+    get:
+      summary: Получить пост по ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID поста
+        - in: query
+          name: requester_id
+          schema:
+            type: integer
+            minimum: 1
+          description: Идентификатор пользователя
+      responses:
+        '200':
+          description: Данные поста
+          content:
+            application/json:
+              schema:
+                $ref: 'http://localhost:8000/docs#/components/schemas/PostOut'
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Пост не найден
+
+    put:
+      summary: Обновить пост
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID поста
+        - in: query
+          name: requester_id
+          schema:
+            type: integer
+            minimum: 1
+          description: Идентификатор пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'http://localhost:8000/docs#/components/schemas/PostUpdate'
+      responses:
+        '200':
+          description: Обновленный пост
+          content:
+            application/json:
+              schema:
+                $ref: 'http://localhost:8000/docs#/components/schemas/PostOut'
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Пост не найден
+
+    delete:
+      summary: Удалить пост
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID поста
+        - in: query
+          name: requester_id
+          schema:
+            type: integer
+            minimum: 1
+          description: Идентификатор пользователя
+      responses:
+        '204':
+          description: Пост успешно удален
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Пост не найден
 components:
   schemas:
     UserCreate:
@@ -89,3 +221,9 @@ components:
       $ref: "http://localhost:8000/docs#/components/schemas/Profile"
     UserProfileUpdate:
       $ref: "http://localhost:8000/docs#/components/schemas/UserProfileUpdate"
+    PostCreate:
+      $ref: "http://localhost:8000/docs#/components/schemas/PostCreate"
+    PostUpdate:
+      $ref: "http://localhost:8000/docs#/components/schemas/PostUpdate"
+    PostOut:
+      $ref: "http://localhost:8000/docs#/components/schemas/PostOut"
