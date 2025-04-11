@@ -61,9 +61,9 @@ model {
 
     postsService = container 'Сервис постов' {
       description 'Хранит посты и комментарии с возможностью их создания, редактирования и удаления'
-      technology 'Golang'
+      technology 'Python'
       style {
-        icon tech:go
+        icon tech:python
       }
     }
 
